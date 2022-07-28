@@ -25,7 +25,7 @@ import numpy as np
 from detect_delimiter import detect
 args = sys.argv # get command line arguments, refFile and newFile
 # initialize output directory and log file
-outdir = 'out'
+outdir = 'data/output'
 if not os.path.exists(outdir):
     os.mkdir(outdir)
 
@@ -46,7 +46,7 @@ def getMetaData(args):
     #  num columns, column names,num missing values per column
     print('Input file:\t', os.path.basename(dataFileName))
     print('File Location:\t', os.path.dirname(dataFileName))
-    metaFile = os.path.join(outdir, ''.join((os.path.basename(dataFileName).split('.')[0],'_metaData_','.csv')))
+    metaFile = os.path.join(outdir, ''.join((os.path.basename(dataFileName).split('.')[0],'_metaData','.csv')))
 
     [input_df,delim, ext] = readFile(dataFileName)
     print('Delimiter:\t',delim)
@@ -97,7 +97,7 @@ def readFile(fileName):
 #### Get list of subjects
 def listSubjects(args,input_df,config_df):
     dataFileName = args[1]
-    subjFile = os.path.join(outdir, ''.join((os.path.basename(dataFileName).split('.')[0],'_subjects_','.csv')))
+    subjFile = os.path.join(outdir, ''.join((os.path.basename(dataFileName).split('.')[0],'_subjects','.csv')))
     sub_id_name = config_df[config_df.eq("Subject ID").any(1)]['Field Name'].values[0]
     subjects = pd.DataFrame(data=np.unique(input_df[sub_id_name]),columns=[sub_id_name])
     subjects = subjects.set_index(sub_id_name)
@@ -111,7 +111,7 @@ def listSubjects(args,input_df,config_df):
 # measures, units, precision
 def getMeasures(args, input_df,config_df):
     dataFileName = args[1]
-    measFile = os.path.join(outdir, ''.join((os.path.basename(dataFileName).split('.')[0],'_measures_','.csv')))
+    measFile = os.path.join(outdir, ''.join((os.path.basename(dataFileName).split('.')[0],'_measures','.csv')))
     meas_id_name = config_df[config_df.eq("Measurement").any(1)]['Field Name'].values[0]
     value_id_name = config_df[config_df.eq("Value").any(1)]['Field Name'].values[0]
     units_id_name = config_df[config_df.eq("Units").any(1)]['Field Name'].values[0]
