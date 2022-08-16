@@ -26,7 +26,7 @@ import logging
 from detect_delimiter import detect
 args = sys.argv # get command line arguments, refFile and newFile
 # initialize output directory and log file
-outdir = 'out'
+outdir = 'data/output'
 if not os.path.exists(outdir):
     os.mkdir(outdir)
 dt = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
