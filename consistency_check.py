@@ -22,6 +22,8 @@ import pandas as pd
 import datetime
 import pytz
 import numpy as np
+import yaml
+from yaml.loader import SafeLoader
 from detect_delimiter import detect
 import logging
 args = sys.argv # get command line arguments, refFile and newFile
@@ -74,12 +76,16 @@ def getData(args):
     logging.info('Config file ' + configFileName)
 
     input_df = readFile(dataFileName)
-    config_df = readFile(configFileName)
+    with open(configFileName, "r") as stream:
+        try:
+            config_data = yaml.load(stream, Loader=SafeLoader)
+        except yaml.YAMLError as exc:
+            print(exc)
 
-    return input_df, config_df
+    return input_df, config_data
 
-def checkDuplicates(input_df, config_df):
-    value_id_name = config_df[config_df.eq("Value").any(1)]['Field Name'].values[0]
+def checkDuplicates(input_df, config_data):
+    value_id_name = config_data["Value"]
     dups = input_df.drop(columns=[value_id_name]).duplicated(keep=False)
     duplicated_df = input_df[dups]
     n = duplicated_df.shape[0]
@@ -93,22 +99,22 @@ def checkDuplicates(input_df, config_df):
         logging.info(duplicated_df)
     return
 
-def checkOverlap(input_df, config_df):
-    cat_id_name = config_df[config_df.eq("Category").any(1)]['Field Name'].values[0]
-    sleep_id_name = config_df[config_df.eq("Sleep").any(1)]['Field Name'].values[0]
-    steps_id_name = config_df[config_df.eq("Steps").any(1)]['Field Name'].values[0]
+def checkOverlap(input_df, config_data):
+    cat_id_name = config_data["Category"]
+    sleep_id_name = config_data["Sleep"]
+    steps_id_name = config_data["Steps"]
     categories = [sleep_id_name,steps_id_name]
     if (sleep_id_name=='nan') & (steps_id_name=='nan'):
         print('No Sleep or Steps categories specified.')
         logging.info('No Sleep or Steps categories specified.')
 
     else:
-        stdate_id_name = config_df[config_df.eq("Start Date").any(1)]['Field Name'].values[0]
-        sttime_id_name = config_df[config_df.eq("Start Time").any(1)]['Field Name'].values[0]
-        endate_id_name = config_df[config_df.eq("End Date").any(1)]['Field Name'].values[0]
-        entime_id_name = config_df[config_df.eq("End Time").any(1)]['Field Name'].values[0]
-        sub_id_name = config_df[config_df.eq("Subject ID").any(1)]['Field Name'].values[0]
-        meas_id_name = config_df[config_df.eq("Measurement").any(1)]['Field Name'].values[0]
+        stdate_id_name = config_data["Start_Date"]
+        sttime_id_name = config_data["Start_Time"]
+        endate_id_name = config_data["End_Date"]
+        entime_id_name = config_data["End_Time"]
+        sub_id_name = config_data["Subject_ID"]
+        meas_id_name = config_data["Measurement"]
 
         if ((stdate_id_name=='nan') | (sttime_id_name=='nan')) | \
                 ((endate_id_name=='nan') | (entime_id_name=='nan')):
@@ -143,9 +149,9 @@ def checkOverlap(input_df, config_df):
 
     return
 
-def measurementStatistics(input_df, config_df):
-    meas_id_name = config_df[config_df.eq("Measurement").any(1)]['Field Name'].values[0]
-    value_id_name = config_df[config_df.eq("Value").any(1)]['Field Name'].values[0]
+def measurementStatistics(input_df, config_data):
+    meas_id_name = config_data["Measurement"]
+    value_id_name = config_data["Value"]
     input_df[value_id_name] = pd.to_numeric(input_df[value_id_name])
     desc_groups = input_df.groupby(meas_id_name)[value_id_name].describe()
     desc_groups.to_csv(descFile)
@@ -156,7 +162,7 @@ def measurementStatistics(input_df, config_df):
     return
 
 if __name__ == "__main__":
-    [input_df,config_df] = getData(args)
-    checkDuplicates(input_df, config_df)
-    checkOverlap(input_df,config_df)
-    measurementStatistics(input_df,config_df)
+    [input_df,config_data] = getData(args)
+    checkDuplicates(input_df, config_data)
+    checkOverlap(input_df,config_data)
+    measurementStatistics(input_df,config_data)

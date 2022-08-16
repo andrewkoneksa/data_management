@@ -23,6 +23,8 @@ import datetime
 import pytz
 import numpy as np
 from detect_delimiter import detect
+import yaml
+from yaml.loader import SafeLoader
 args = sys.argv # get command line arguments, refFile and newFile
 # initialize output directory and log file
 outdir = 'data/output'
@@ -34,7 +36,7 @@ def getMetaData(args):
     dataFileName = args[1]
     configFileName = args[2]
     if not os.path.exists(dataFileName):
-        print(''.join(('Reference file', dataFileName, 'does not exist. Exiting...')))
+        print(''.join(('Data file', dataFileName, 'does not exist. Exiting...')))
         exit(1)
     if not os.path.exists(configFileName):
         print(''.join(('Config file', configFileName, 'does not exist. Exiting...')))
@@ -49,6 +51,7 @@ def getMetaData(args):
     metaFile = os.path.join(outdir, ''.join((os.path.basename(dataFileName).split('.')[0],'_metaData','.csv')))
 
     [input_df,delim, ext] = readFile(dataFileName)
+
     print('Delimiter:\t',delim)
     print('Extension:\t',ext)
     numrows = input_df.shape[0]
@@ -59,10 +62,13 @@ def getMetaData(args):
     cols = input_df.columns.tolist()
     cols_na = input_df.isna().sum()
 
-    [config_df,c_delim,c_ext] = readFile(configFileName)
-    sub_id_name = config_df[config_df.eq("Subject ID").any(1)]['Field Name'].values[0]
+    with open(configFileName, "r") as stream:
+        try:
+            config_data = yaml.load(stream,Loader=SafeLoader)
+        except yaml.YAMLError as exc:
+            print(exc)
+    sub_id_name = config_data["Subject_ID"]
     num_subjects = len(np.unique(input_df[sub_id_name]))
-
 
     meta_dict = {'Name':['file name','file location','file extension', 'delimiter','rows','columns','subjects'],
                  'Value':[os.path.basename(dataFileName),os.path.dirname(dataFileName), ext, delim,numrows,numcols,num_subjects]}
@@ -75,7 +81,7 @@ def getMetaData(args):
     print()
     meta_df = meta_df.set_index('Name')
     meta_df.to_csv(metaFile)
-    return input_df, config_df
+    return input_df, config_data
 
 #### read file
 def readFile(fileName):
@@ -95,10 +101,10 @@ def readFile(fileName):
         exit(1)
     return [df, delim, ext]
 #### Get list of subjects
-def listSubjects(args,input_df,config_df):
+def listSubjects(args,input_df,config_data):
     dataFileName = args[1]
     subjFile = os.path.join(outdir, ''.join((os.path.basename(dataFileName).split('.')[0],'_subjects','.csv')))
-    sub_id_name = config_df[config_df.eq("Subject ID").any(1)]['Field Name'].values[0]
+    sub_id_name = config_data['Subject_ID']
     subjects = pd.DataFrame(data=np.unique(input_df[sub_id_name]),columns=[sub_id_name])
     subjects = subjects.set_index(sub_id_name)
     subjects.to_csv(subjFile)
@@ -109,12 +115,12 @@ def listSubjects(args,input_df,config_df):
 
 #### Get measures
 # measures, units, precision
-def getMeasures(args, input_df,config_df):
+def getMeasures(args, input_df,config_data):
     dataFileName = args[1]
     measFile = os.path.join(outdir, ''.join((os.path.basename(dataFileName).split('.')[0],'_measures','.csv')))
-    meas_id_name = config_df[config_df.eq("Measurement").any(1)]['Field Name'].values[0]
-    value_id_name = config_df[config_df.eq("Value").any(1)]['Field Name'].values[0]
-    units_id_name = config_df[config_df.eq("Units").any(1)]['Field Name'].values[0]
+    meas_id_name = config_data["Measurement"]
+    value_id_name = config_data["Value"]
+    units_id_name = config_data["Units"]
 
     measures = np.unique(input_df[meas_id_name])
     meas_df = pd.DataFrame(columns=['Measure','Units','Precision'])
@@ -132,7 +138,7 @@ def getMeasures(args, input_df,config_df):
     print()
 
 if __name__ == "__main__":
-   [input_df,config_df] = getMetaData(args) # read in data
-   listSubjects(args,input_df,config_df)
-   getMeasures(args,input_df,config_df)
+   [input_df,config_data] = getMetaData(args) # read in data
+   listSubjects(args,input_df,config_data)
+   getMeasures(args,input_df,config_data)
 
