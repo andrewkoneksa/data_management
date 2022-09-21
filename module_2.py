@@ -33,4 +33,5 @@ if 'IO' not in qcloader.config_data:
 if 'File_Details' in qcloader.config_data:
     fd = fileDetails.fileDetails(qcloader)
     fd.listSubjects()
+    fd.getMetaData()
     fd.getMeasures()
