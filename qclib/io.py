@@ -30,6 +30,13 @@ class QCLoader:
         self.config_data = config_data
         self.input_dir = config_data['IO']['input_dir']
         self.output_dir = config_data['IO']['output_dir']
+        try:
+            output_contents = os.listdir(self.output_dir)
+        except:
+            print('Output directory ',self.output_dir,' does not exist.')
+            self.output_dir = os.path.join(os.getcwd(),'output')
+            os.mkdir(self.output_dir)
+            print('Creating output directory ',self.output_dir)
         dt = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         logFile = os.path.join(self.output_dir, ''.join((os.path.splitext(os.path.basename(yamlFileName))[0],
                                                          '_',dt,'.log')))
