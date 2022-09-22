@@ -54,6 +54,9 @@ class fileDetails:
         meta_df = pd.DataFrame(meta_dict)
         meta_df.loc[len(meta_df.index)] = ['column name', 'missing count']
         print('column name\t missing count')
+        for i, cols_na_i in enumerate(cols_na):
+            print(cols[i],'\t',cols_na_i)
+            meta_df.loc[len(meta_df.index)] = [cols[i],cols_na_i]
         print()
         meta_df.to_csv(metaFile)
 
