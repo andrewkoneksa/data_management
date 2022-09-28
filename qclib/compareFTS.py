@@ -8,7 +8,7 @@ class compareFTS:
     compare data to specs in FTS
     """
     def __init__(self, qcloader):
-        data_path = os.path.join(qcloader.input_dir, qcloader.config_data['Consistency_Check']['file'])
+        data_path = os.path.join(qcloader.input_dir, qcloader.config_data['Compare_FTS']['file'])
         self.data_path = data_path
         self.data_df = qcloader.readFile(data_path)
         self.config_data = qcloader.config_data
