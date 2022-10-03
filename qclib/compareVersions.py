@@ -43,8 +43,8 @@ class compareVersions:
             print('Files do NOT have the same contents')
             # name output dataframes
             fname = os.path.splitext(os.path.basename(self.new_file))[0]
-            refNotNewFile = os.path.join(self.output_dir, ''.join((fname, '_inNewNotRef.csv')))
-            newNotRefFile = os.path.join(self.output_dir, ''.join((fname, '_inRefNotNew.csv')))
+            refNotNewFile = os.path.join(self.output_dir, ''.join((fname, '_inRefNotNew.csv')))
+            newNotRefFile = os.path.join(self.output_dir, ''.join((fname, '_inNewNotRef.csv')))
             # print number of rows in each file and that are different
             logging.info('Number of records in Reference  ' + str(df_ref.shape[0]))
             logging.info('Number of records in New  ' + str(df_new.shape[0]))
